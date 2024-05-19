@@ -1,8 +1,12 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { Logger } from "@nestjs/common";
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+import { bootstrapApplication } from "./app";
+
+async function bootstrap(): Promise<void> {
+	const PORT = 3300;
+	const { nestApplication } = await bootstrapApplication();
+	await nestApplication.listen(PORT);
+	Logger.debug(`Server running on ${await nestApplication.getUrl()}/api`);
+	Logger.verbose(`Confirm server health on ${await nestApplication.getUrl()}/api/health`);
 }
 bootstrap();

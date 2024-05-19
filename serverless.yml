@@ -1,0 +1,72 @@
+# https://github.com/lalcebo/json-schema/blob/master/serverless/reference.json
+service: telegram-bot
+frameworkVersion: "3"
+useDotenv: true
+plugins:
+  - serverless-webpack
+  - serverless-prune-plugin
+  - serverless-dotenv-plugin
+  - serverless-deployment-bucket
+
+custom:
+  prune:
+    automatic: true
+    number: 3
+
+  webpack:
+    webpackConfig: "webpack.config.js" # Name of webpack configuration file
+    includeModules: true # Node modules configuration for packaging
+    keepOutputDirectory: true
+    packager: "npm" # Packager that will be used to package your external modules
+    excludeFiles: src/**/*.spec.ts # Provide a glob for files to ignore
+
+  config:
+    stage: ${opt:stage, 'development'}
+    region: ${opt:region, 'us-east-1'}
+    name: telegram-bot
+
+provider:
+  name: aws
+  stage: ${self:custom.config.stage}
+  runtime: nodejs20.x
+  region: us-east-1
+  deploymentBucket:
+    name: ${self:service}
+  deploymentPrefix: ${self:custom.config.name}
+
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    NODE_ENV: ${self:custom.config.stage}
+    NODE_OPTIONS: "--enable-source-maps"
+
+  # Optional CloudFormation tags to apply to APIs and functions
+  tags:
+    appName: ${self:custom.config.name}
+
+  # Optional CloudFormation tags to apply to the stack
+  stackTags:
+    appName: ${self:custom.config.name}
+
+  httpApi:
+    # https://www.serverless.com/framework/docs/providers/aws/events/http-api
+    shouldStartNameWithService: true
+    cors:
+      allowedOrigins: "*"
+      allowedHeaders:
+        - Content-Type
+        - Accept
+        - X-Amz-Date
+        - Authorization
+        - X-Api-Key
+        - X-Amz-Security-Token
+        - X-Amz-User-Agent
+      allowedMethods: "*"
+      allowCredentials: false
+
+functions:
+  telegram-bot:
+    name: ${self:service}-${self:custom.config.stage}
+    handler: dist/serverless.handler
+    timeout: 15
+    events:
+      - httpApi: "*"
