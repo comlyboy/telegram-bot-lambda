@@ -4,9 +4,9 @@ import { bootstrapApplication } from "./app";
 
 async function bootstrap(): Promise<void> {
 	const PORT = 3300;
-	const { nestApplication } = await bootstrapApplication();
-	await nestApplication.listen(PORT);
-	Logger.debug(`Server running on ${await nestApplication.getUrl()}/api`);
-	Logger.verbose(`Confirm server health on ${await nestApplication.getUrl()}/api/health`);
+	const application = await bootstrapApplication();
+	await application.listen(PORT);
+	Logger.debug(`Server running on ${await application.getUrl()}/api`);
+	Logger.verbose(`Confirm server health on ${await application.getUrl()}/api/health`);
 }
 bootstrap();
